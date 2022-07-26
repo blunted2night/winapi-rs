@@ -5,7 +5,7 @@
 // except according to those terms.
 use ctypes::{c_char, c_void};
 use shared::basetsd::{SIZE_T, UINT64};
-use shared::minwindef::{BOOL, FLOAT, UINT};
+use shared::minwindef::{BOOL, FLOAT, UINT, DWORD};
 use um::d3d12::ID3D12Resource;
 use um::unknwnbase::{IUnknown, IUnknownVtbl};
 use um::winnt::{HRESULT, LPCSTR};
@@ -1344,6 +1344,34 @@ interface ID3D12InfoQueue(ID3D12InfoQueueVtbl): IUnknown(IUnknownVtbl) {
     ) -> (),
     fn GetMuteDebugOutput() -> BOOL,
 }}
+ENUM!{
+    enum D3D12_MESSAGE_CALLBACK_FLAGS {
+        D3D12_MESSAGE_CALLBACK_FLAG_NONE = 0,
+        D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS = 1,
+    }
+}
+FN!{
+    stdcall D3D12MessageFunc(
+        Category: D3D12_MESSAGE_CATEGORY,
+        Severity: D3D12_MESSAGE_SEVERITY,
+        ID: D3D12_MESSAGE_ID,
+        pDescription: LPCSTR,
+        pContext: *mut c_void,
+    )->()
+}
+RIDL!{#[uuid(0x0742a90b, 0xc387, 0x483f, 0xb9, 0x46, 0x30, 0xa7, 0xe4, 0xe6, 0x14, 0x58)]
+    interface ID3D12InfoQueue1(ID3D12InfoQueue1Vtbl): ID3D12InfoQueue(ID3D12InfoQueueVtbl) {
+        fn RegisterMessageCallback(
+            CallbackFunc: D3D12MessageFunc,
+            CallbackFilterFlags: D3D12_MESSAGE_CALLBACK_FLAGS,
+            pContext: *mut c_void,
+            pCallbackCookie: *mut DWORD,
+        ) -> HRESULT,
+        fn UnregisterMessageCallback(
+            CallbackCookie: DWORD,
+        ) -> HRESULT,
+    }
+}
 DEFINE_GUID!{IID_ID3D12Debug,
     0x344488b7, 0x6846, 0x474b, 0xb9, 0x89, 0xf0, 0x27, 0x44, 0x82, 0x45, 0xe0}
 DEFINE_GUID!{IID_ID3D12Debug1,
